@@ -135,6 +135,8 @@ console.log(rendered); // result:
   * single quoted string `'i\'m cool'`.
   * double quoted string `"that's \"right\""`.
 * Recognized nested selectors (up to infinite) inside `:is()`, `:not()`, `:where()`, `:has()`.
+* Fast - our algorithm relies solely on internal JS functions like `skipXXX`, `eatXXX`, `isXXX`, `parseXXX`.  
+  No regular expression (RegExp) for parsing.
 
 ## Installation
 
