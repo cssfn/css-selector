@@ -1,0 +1,29 @@
+{
+  "name": "@cssfn/css-selector",
+  "version": "1.0.0",
+  "description": "Manipulates css selector - parse, transform, calculate specificity, and more.",
+  "type": "module",
+  "main": "dist/css-selector.js",
+  "types": "dist/css-selector.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssfn/css-selector.git"
+  },
+  "keywords": [
+    "css",
+    "stylesheet",
+    "selector",
+    "combinator",
+    "attributes",
+    "typescript"
+  ],
+  "author": "heymarco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cssfn/css-selector/issues"
+  },
+  "homepage": "https://github.com/cssfn/css-selector#readme"
+}
