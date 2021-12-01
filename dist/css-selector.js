@@ -505,7 +505,7 @@ export const flatMapSelectors = (selectors, callbackFn) => {
         .flatMap((selectorEntry) => {
         if (isCombinator(selectorEntry))
             return [selectorEntry];
-        let replacement = callbackFn(selectorEntry); // isSimpleSelector(selectorEntry)
+        let replacement = callbackFn(selectorEntry) ?? selectorEntry; // isSimpleSelector(selectorEntry)
         if (replacement === selectorEntry) { // if has not been replaced by `callbackFn` (same by reference)
             const [, // skip: selectorType,
             , // skip: selectorName,

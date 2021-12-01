@@ -569,7 +569,7 @@ export const flatMapSelectors = (selectors: SelectorList, callbackFn: MapSelecto
                 
                 
                 
-                let replacement = callbackFn(selectorEntry); // isSimpleSelector(selectorEntry)
+                let replacement = callbackFn(selectorEntry) ?? selectorEntry; // isSimpleSelector(selectorEntry)
                 
                 
                 
