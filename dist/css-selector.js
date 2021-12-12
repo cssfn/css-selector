@@ -335,10 +335,10 @@ export const parseSelectors = (expression) => {
         } // syntax error: missing closing_quoteChar => revert changes & return null
         const value = expression.substring(originPos + 1, pos - 1); // excludes the opening_quoteChar & closing_quoteChar
         if (quoteChar === "'") { // single quoteChar
-            return value.replaceAll(/(?<!\\)"/g, '\\"'); // escape the unescaped double quoteChar, so both single & double quoteChar are escaped
+            return value.replace(/(?<!\\)"/g, '\\"'); // escape the unescaped double quoteChar, so both single & double quoteChar are escaped
         }
         else { // double quoteChar
-            return value.replaceAll(/(?<!\\)'/g, "\\'"); // escape the unescaped single quoteChar, so both single & double quoteChar are escaped
+            return value.replace(/(?<!\\)'/g, "\\'"); // escape the unescaped single quoteChar, so both single & double quoteChar are escaped
         } // if
     };
     const parseString = () => {
