@@ -1,6 +1,6 @@
 {
   "name": "@cssfn/css-selector",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Manipulates css selector - parse, transform, calculate specificity, and more.",
   "type": "module",
   "main": "dist/css-selector.js",
@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/cssfn/css-selector/issues"
   },
-  "homepage": "https://github.com/cssfn/css-selector#readme"
+  "homepage": "https://github.com/cssfn/css-selector#readme",
+  "dependencies": {
+    "@cssfn/types": "^1.0.4"
+  }
 }
