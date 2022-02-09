@@ -1,7 +1,8 @@
 const whitespaceList = [' ', '\n', '\r', '\t', '\f', '\v'];
 const specialPseudoClassList = ['is', 'not', 'where', 'has'];
 // parses:
-export const parseSelectors = (expression) => {
+export const parseSelectors = (expressions) => {
+    const expression = [expressions].flat(Infinity).filter((exp) => !!exp).join(',');
     const expressionLength = expression.length;
     let pos = 0;
     const isEof = () => {
@@ -539,14 +540,14 @@ export const isNotPseudoClassSelector = (selectorEntry) => !isPseudoClassSelecto
 export const isNotClassOrPseudoClassSelector = (selectorEntry) => !isClassOrPseudoClassSelector(selectorEntry);
 export const isNotPseudoElementSelector = (selectorEntry) => !isPseudoElementSelector(selectorEntry);
 export const isNotElementOrPseudoElementSelector = (selectorEntry) => !isElementOrPseudoElementSelector(selectorEntry);
-export const isAttrSelectorOf = (selectorEntry, attrName) => isAttrSelector(selectorEntry) && [attrName].flat().includes(selectorEntry?.[0]);
-export const isElementSelectorOf = (selectorEntry, elmName) => isElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[0]);
-export const isIdSelectorOf = (selectorEntry, id) => isIdSelector(selectorEntry) && [id].flat().includes(selectorEntry?.[0]);
-export const isClassSelectorOf = (selectorEntry, className) => isClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[0]);
-export const isPseudoClassSelectorOf = (selectorEntry, className) => isPseudoClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[0]);
-export const isClassOrPseudoClassSelectorOf = (selectorEntry, className) => isClassOrPseudoClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[0]);
-export const isPseudoElementSelectorOf = (selectorEntry, elmName) => isPseudoElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[0]);
-export const isElementOrPseudoElementSelectorOf = (selectorEntry, elmName) => isElementOrPseudoElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[0]);
+export const isAttrSelectorOf = (selectorEntry, attrName) => isAttrSelector(selectorEntry) && [attrName].flat().includes(selectorEntry?.[2]?.[0]); // [ '['     , null      , [ attrName , op , value , opt ] ]
+export const isElementSelectorOf = (selectorEntry, elmName) => isElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[1]); // [ ''      , elmName   ]
+export const isIdSelectorOf = (selectorEntry, id) => isIdSelector(selectorEntry) && [id].flat().includes(selectorEntry?.[1]); // [ '#'     , id        ]
+export const isClassSelectorOf = (selectorEntry, className) => isClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[1]); // [ '.'     , className ]
+export const isPseudoClassSelectorOf = (selectorEntry, className) => isPseudoClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[1]); // [ ':'     , className ]
+export const isClassOrPseudoClassSelectorOf = (selectorEntry, className) => isClassOrPseudoClassSelector(selectorEntry) && [className].flat().includes(selectorEntry?.[1]); // [ '.'|':' , className ]
+export const isPseudoElementSelectorOf = (selectorEntry, elmName) => isPseudoElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[1]); // [ '::'    , elmName   ]
+export const isElementOrPseudoElementSelectorOf = (selectorEntry, elmName) => isElementOrPseudoElementSelector(selectorEntry) && [elmName].flat().includes(selectorEntry?.[1]); // [ ''|'::' , elmName   ]
 export const combinator = (combinator) => combinator;
 //#region aliases
 export const [createCombinator,] = [
@@ -571,9 +572,9 @@ export const [createSelector, createPureSelector, createSelectorList, createPure
 export const isNotEmptySelectorEntry = (selectorEntry) => {
     /*
         SimpleSelector : [ SelectorToken, SelectorName, SelectorParams ]
-        Combinator     : string
+        Combinator     : non_empty string
     */
-    return !!selectorEntry && (Array.isArray(selectorEntry) || (typeof (selectorEntry) === 'string'));
+    return !!selectorEntry;
 };
 export const isSelector = (test) => {
     /*
@@ -582,8 +583,10 @@ export const isSelector = (test) => {
     */
     return !!test && (typeof (test[0]) !== 'string'); // Selector : the first element (SelectorEntry) must be a NON-string, the Combinator is guaranteed NEVER be the first element
 };
-export const isNotEmptySelector = (selector) => !!selector && !!selector.filter((optSelectorEntry) => !!optSelectorEntry /* filter out undefined|null|false */).length;
-export const isNotEmptySelectors = (selectors) => !!selectors && !!selectors.filter((optSelector) => !!optSelector /* filter out undefined|null|false */).length;
+export const isNotEmptySelector = (selector) => !!selector && selector.some(isNotEmptySelectorEntry);
+export const isNotEmptySelectors = (selectors) => !!selectors && selectors.some(isNotEmptySelector);
+export const countSelectorEntries = (selector) => (!!selector && selector.filter(isNotEmptySelectorEntry).length) || 0;
+export const countSelectors = (selectors) => (!!selectors && selectors.filter(isNotEmptySelector).length) || 0;
 // renders:
 export const selectorParamsToString = (selectorParams) => {
     if ((!selectorParams) && (selectorParams !== ''))
@@ -669,18 +672,23 @@ export const flatMapSelectors = (selectors, callbackFn) => {
 export { flatMapSelectors as mutateSelectors };
 const defaultGroupSelectorOptions = {
     selectorName: 'is',
+    cancelGroupIfSingular: false
 };
 export const groupSelectors = (selectors, options = defaultGroupSelectorOptions) => {
     if (!isNotEmptySelectors(selectors))
         return pureSelectorList(selector(...[] // an empty Selector
         )); // empty selectors => nothing to group => return a SelectorList with an empty Selector
-    const selectorsWithoutPseudoElm = selectors.filter((selector) => selector.every(isNotPseudoElementSelector)); // not contain ::pseudo-element
-    const selectorsOnlyPseudoElm = selectors.filter((selector) => selector.some(isPseudoElementSelector)); // do  contain ::pseudo-element
+    const selectorsWithoutPseudoElm = selectors.filter(isNotEmptySelector).filter((selector) => selector.every(isNotPseudoElementSelector)); // not contain ::pseudo-element
+    const selectorsOnlyPseudoElm = selectors.filter(isNotEmptySelector).filter((selector) => selector.some(isPseudoElementSelector)); // do  contain ::pseudo-element
     if (!isNotEmptySelectors(selectorsWithoutPseudoElm))
         return pureSelectorList(selector(...[] // an empty Selector
         ), ...selectorsOnlyPseudoElm); // empty selectors => nothing to group => return a SelectorList with an empty Selector
-    const { selectorName: targetSelectorName = defaultGroupSelectorOptions.selectorName, } = options;
-    return pureSelectorList(selector(pseudoClassSelector(targetSelectorName, selectorsWithoutPseudoElm)), ...selectorsOnlyPseudoElm);
+    const { selectorName: targetSelectorName = defaultGroupSelectorOptions.selectorName, cancelGroupIfSingular = defaultGroupSelectorOptions.cancelGroupIfSingular, } = options;
+    return pureSelectorList(((cancelGroupIfSingular && (selectorsWithoutPseudoElm.length < 2))
+        ?
+            selectorsWithoutPseudoElm?.[0]
+        :
+            selector(pseudoClassSelector(targetSelectorName, selectorsWithoutPseudoElm))), ...selectorsOnlyPseudoElm);
 };
 export const groupSelector = (selector, options = defaultGroupSelectorOptions) => {
     return groupSelectors(selectorList(selector), options);

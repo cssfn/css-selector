@@ -1,6 +1,6 @@
 {
   "name": "@cssfn/css-selector",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Manipulates css selector - parse, transform, calculate specificity, and more.",
   "type": "module",
   "main": "dist/css-selector.js",

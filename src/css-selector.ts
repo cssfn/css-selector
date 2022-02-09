@@ -2,6 +2,7 @@
 import type {
     OptionalOrFalse,
     SingleOrArray,
+    SingleOrDeepArray,
 }                           from '@cssfn/types'       // cssfn's types
 
 
@@ -77,7 +78,8 @@ const specialPseudoClassList      = ['is', 'not', 'where', 'has'];
 
 
 // parses:
-export const parseSelectors = (expression: string): SelectorList|null => {
+export const parseSelectors = (expressions: SingleOrDeepArray<OptionalOrFalse<string>>): SelectorList|null => {
+    const expression = [expressions].flat(Infinity).filter((exp) => !!exp).join(',');
     const expressionLength = expression.length;
     let pos = 0;
     
@@ -623,14 +625,14 @@ export const isNotClassOrPseudoClassSelector     = (selectorEntry: OptionalOrFal
 export const isNotPseudoElementSelector          = (selectorEntry: OptionalOrFalse<SelectorEntry>) => !isPseudoElementSelector(selectorEntry);
 export const isNotElementOrPseudoElementSelector = (selectorEntry: OptionalOrFalse<SelectorEntry>) => !isElementOrPseudoElementSelector(selectorEntry);
 
-export const isAttrSelectorOf                    = (selectorEntry: OptionalOrFalse<SelectorEntry>, attrName  : SingleOrArray<string>)     : boolean => isAttrSelector(selectorEntry)                   && [attrName  ].flat().includes(selectorEntry?.[0]);
-export const isElementSelectorOf                 = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isElementSelector(selectorEntry)                && [elmName   ].flat().includes(selectorEntry?.[0]);
-export const isIdSelectorOf                      = (selectorEntry: OptionalOrFalse<SelectorEntry>, id        : SingleOrArray<string>)     : boolean => isIdSelector(selectorEntry)                     && [id        ].flat().includes(selectorEntry?.[0]);
-export const isClassSelectorOf                   = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isClassSelector(selectorEntry)                  && [className ].flat().includes(selectorEntry?.[0]);
-export const isPseudoClassSelectorOf             = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isPseudoClassSelector(selectorEntry)            && [className ].flat().includes(selectorEntry?.[0]);
-export const isClassOrPseudoClassSelectorOf      = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isClassOrPseudoClassSelector(selectorEntry)     && [className ].flat().includes(selectorEntry?.[0]);
-export const isPseudoElementSelectorOf           = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isPseudoElementSelector(selectorEntry)          && [elmName   ].flat().includes(selectorEntry?.[0]);
-export const isElementOrPseudoElementSelectorOf  = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isElementOrPseudoElementSelector(selectorEntry) && [elmName   ].flat().includes(selectorEntry?.[0]);
+export const isAttrSelectorOf                    = (selectorEntry: OptionalOrFalse<SelectorEntry>, attrName  : SingleOrArray<string>)     : boolean => isAttrSelector(selectorEntry)                   && [attrName  ].flat().includes(selectorEntry?.[2]?.[0]); // [ '['     , null      , [ attrName , op , value , opt ] ]
+export const isElementSelectorOf                 = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isElementSelector(selectorEntry)                && [elmName   ].flat().includes(selectorEntry?.[1]);      // [ ''      , elmName   ]
+export const isIdSelectorOf                      = (selectorEntry: OptionalOrFalse<SelectorEntry>, id        : SingleOrArray<string>)     : boolean => isIdSelector(selectorEntry)                     && [id        ].flat().includes(selectorEntry?.[1]);      // [ '#'     , id        ]
+export const isClassSelectorOf                   = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isClassSelector(selectorEntry)                  && [className ].flat().includes(selectorEntry?.[1]);      // [ '.'     , className ]
+export const isPseudoClassSelectorOf             = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isPseudoClassSelector(selectorEntry)            && [className ].flat().includes(selectorEntry?.[1]);      // [ ':'     , className ]
+export const isClassOrPseudoClassSelectorOf      = (selectorEntry: OptionalOrFalse<SelectorEntry>, className : SingleOrArray<string>)     : boolean => isClassOrPseudoClassSelector(selectorEntry)     && [className ].flat().includes(selectorEntry?.[1]);      // [ '.'|':' , className ]
+export const isPseudoElementSelectorOf           = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isPseudoElementSelector(selectorEntry)          && [elmName   ].flat().includes(selectorEntry?.[1]);      // [ '::'    , elmName   ]
+export const isElementOrPseudoElementSelectorOf  = (selectorEntry: OptionalOrFalse<SelectorEntry>, elmName   : SingleOrArray<string>)     : boolean => isElementOrPseudoElementSelector(selectorEntry) && [elmName   ].flat().includes(selectorEntry?.[1]);      // [ ''|'::' , elmName   ]
 
 export const combinator = (combinator: Combinator): Combinator => combinator;
 //#region aliases
@@ -668,9 +670,9 @@ export const [
 export const isNotEmptySelectorEntry = (selectorEntry: OptionalOrFalse<SelectorEntry>): selectorEntry is SelectorEntry => {
     /*
         SimpleSelector : [ SelectorToken, SelectorName, SelectorParams ]
-        Combinator     : string
+        Combinator     : non_empty string
     */
-   return !!selectorEntry && (Array.isArray(selectorEntry) || (typeof(selectorEntry) === 'string'));
+   return !!selectorEntry;
 }
 export const isSelector = (test: OptionalOrFalse<SimpleSelector|Selector>): test is Selector => {
     /*
@@ -679,8 +681,10 @@ export const isSelector = (test: OptionalOrFalse<SimpleSelector|Selector>): test
     */
     return !!test && (typeof(test[0]) !== 'string'); // Selector : the first element (SelectorEntry) must be a NON-string, the Combinator is guaranteed NEVER be the first element
 };
-export const isNotEmptySelector  = (selector  : OptionalOrFalse<Selector    >):  selector is PureSelector     => !!selector  &&  !!selector.filter((optSelectorEntry) => !!optSelectorEntry /* filter out undefined|null|false */).length;
-export const isNotEmptySelectors = (selectors : OptionalOrFalse<SelectorList>): selectors is PureSelectorList => !!selectors && !!selectors.filter((optSelector)      => !!optSelector      /* filter out undefined|null|false */).length;
+export const isNotEmptySelector   = (selector  : OptionalOrFalse<Selector    >): selector  is PureSelector     =>  !!selector  &&  selector.some(  isNotEmptySelectorEntry);
+export const isNotEmptySelectors  = (selectors : OptionalOrFalse<SelectorList>): selectors is PureSelectorList =>  !!selectors && selectors.some(  isNotEmptySelector     );
+export const countSelectorEntries = (selector  : OptionalOrFalse<Selector    >): number                        => (!!selector  &&  selector.filter(isNotEmptySelectorEntry).length) || 0;
+export const countSelectors       = (selectors : OptionalOrFalse<SelectorList>): number                        => (!!selectors && selectors.filter(isNotEmptySelector     ).length) || 0;
 
 
 
@@ -811,10 +815,12 @@ export { flatMapSelectors as mutateSelectors }
 
 // groups:
 export interface GroupSelectorOptions {
-    selectorName ?: SelectorName | ('is'|'not'|'has'|'where'),
+    selectorName          ?: SelectorName | ('is'|'not'|'has'|'where'),
+    cancelGroupIfSingular ?: boolean
 }
 const defaultGroupSelectorOptions : Required<GroupSelectorOptions> = {
-    selectorName  : 'is',
+    selectorName           : 'is',
+    cancelGroupIfSingular  : false
 };
 export const groupSelectors = (selectors: OptionalOrFalse<SelectorList>, options: GroupSelectorOptions = defaultGroupSelectorOptions): PureSelectorList & { 0: Selector } => {
     if (!isNotEmptySelectors(selectors)) return pureSelectorList(
@@ -825,8 +831,8 @@ export const groupSelectors = (selectors: OptionalOrFalse<SelectorList>, options
     
     
     
-    const selectorsWithoutPseudoElm : PureSelectorList = selectors.filter((selector) => selector.every(isNotPseudoElementSelector)); // not contain ::pseudo-element
-    const selectorsOnlyPseudoElm    : PureSelectorList = selectors.filter((selector) => selector.some(isPseudoElementSelector));     // do  contain ::pseudo-element
+    const selectorsWithoutPseudoElm : PureSelector[] = selectors.filter(isNotEmptySelector).filter((selector) => selector.every(isNotPseudoElementSelector)); // not contain ::pseudo-element
+    const selectorsOnlyPseudoElm    : PureSelector[] = selectors.filter(isNotEmptySelector).filter((selector) => selector.some(isPseudoElementSelector));     // do  contain ::pseudo-element
     
     
     
@@ -841,14 +847,21 @@ export const groupSelectors = (selectors: OptionalOrFalse<SelectorList>, options
     
     
     const {
-        selectorName : targetSelectorName = defaultGroupSelectorOptions.selectorName,
+        selectorName          : targetSelectorName = defaultGroupSelectorOptions.selectorName,
+        cancelGroupIfSingular                      = defaultGroupSelectorOptions.cancelGroupIfSingular,
     } = options;
     
     
     
     return pureSelectorList(
-        selector(
-            pseudoClassSelector(targetSelectorName, selectorsWithoutPseudoElm),
+        (
+            (cancelGroupIfSingular && (selectorsWithoutPseudoElm.length < 2))
+            ?
+            selectorsWithoutPseudoElm?.[0]
+            :
+            selector(
+                pseudoClassSelector(targetSelectorName, selectorsWithoutPseudoElm),
+            )
         ),
         
         ...selectorsOnlyPseudoElm,

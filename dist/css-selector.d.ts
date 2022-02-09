@@ -1,4 +1,4 @@
-import type { OptionalOrFalse, SingleOrArray } from '@cssfn/types';
+import type { OptionalOrFalse, SingleOrArray, SingleOrDeepArray } from '@cssfn/types';
 export declare type ParentSelectorToken = '&';
 export declare type UniversalSelectorToken = '*';
 export declare type UnnamedSelectorToken = ParentSelectorToken | UniversalSelectorToken;
@@ -40,7 +40,7 @@ export declare type Selector = OptionalOrFalse<SelectorEntry>[];
 export declare type SelectorList = OptionalOrFalse<Selector>[];
 export declare type PureSelector = SelectorEntry[];
 export declare type PureSelectorList = Selector[];
-export declare const parseSelectors: (expression: string) => SelectorList | null;
+export declare const parseSelectors: (expressions: SingleOrDeepArray<OptionalOrFalse<string>>) => SelectorList | null;
 export declare const isWildParams: (selectorParams: SelectorParams) => selectorParams is WildParams;
 export declare const isAttrSelectorParams: (selectorParams: SelectorParams) => selectorParams is AttrSelectorParams;
 export declare const isSelectors: (selectorParams: SelectorParams) => selectorParams is SelectorList;
@@ -95,6 +95,8 @@ export declare const isNotEmptySelectorEntry: (selectorEntry: OptionalOrFalse<Se
 export declare const isSelector: (test: OptionalOrFalse<SimpleSelector | Selector>) => test is Selector;
 export declare const isNotEmptySelector: (selector: OptionalOrFalse<Selector>) => selector is PureSelector;
 export declare const isNotEmptySelectors: (selectors: OptionalOrFalse<SelectorList>) => selectors is PureSelectorList;
+export declare const countSelectorEntries: (selector: OptionalOrFalse<Selector>) => number;
+export declare const countSelectors: (selectors: OptionalOrFalse<SelectorList>) => number;
 export declare const selectorParamsToString: (selectorParams: OptionalOrFalse<SelectorParams>) => string;
 export declare const selectorToString: (selector: Selector) => string;
 export declare const selectorsToString: (selectors: SelectorList) => string;
@@ -112,6 +114,7 @@ export declare const flatMapSelectors: (selectors: SelectorList, callbackFn: Map
 export { flatMapSelectors as mutateSelectors };
 export interface GroupSelectorOptions {
     selectorName?: SelectorName | ('is' | 'not' | 'has' | 'where');
+    cancelGroupIfSingular?: boolean;
 }
 export declare const groupSelectors: (selectors: OptionalOrFalse<SelectorList>, options?: GroupSelectorOptions) => PureSelectorList & {
     0: Selector;
