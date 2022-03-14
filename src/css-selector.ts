@@ -136,7 +136,7 @@ export const parseSelectors = (expressions: SingleOrDeepArray<OptionalOrFalse<st
         while (!isEof() && isValidIdentifierChar()) pos++; // move forward until invalid
         if (pos === originPos) return null; // pos was not moved => nothing to parse => no changes made & return null
         
-        return expression.substring(originPos, pos);
+        return expression.slice(originPos, pos);
     };
     const parseSimpleSelector = (): SimpleSelector|null => {
         const originPos = pos;
@@ -320,7 +320,7 @@ export const parseSelectors = (expressions: SingleOrDeepArray<OptionalOrFalse<st
         
         if (!eatClosingBracket()) { pos = originPos; return null; } // syntax error: missing `)` => revert changes & return null
         
-        return expression.substring(originPos + 1, pos - 1);
+        return expression.slice(originPos + 1, pos - 1);
     };
     const parseSelectorParams = (): SelectorList|null => {
         const originPos = pos;
@@ -397,7 +397,7 @@ export const parseSelectors = (expressions: SingleOrDeepArray<OptionalOrFalse<st
         
         if (!eatQuote(quoteChar)) { pos = originPos; return null; } // syntax error: missing closing_quoteChar => revert changes & return null
         
-        const value = expression.substring(originPos + 1, pos - 1); // excludes the opening_quoteChar & closing_quoteChar
+        const value = expression.slice(originPos + 1, pos - 1); // excludes the opening_quoteChar & closing_quoteChar
         if (quoteChar === "'") { // single quoteChar
             return value.replace(/(?<!\\)"/g, '\\"'); // escape the unescaped double quoteChar, so both single & double quoteChar are escaped
         }

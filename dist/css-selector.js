@@ -62,7 +62,7 @@ export const parseSelectors = (expressions) => {
             pos++; // move forward until invalid
         if (pos === originPos)
             return null; // pos was not moved => nothing to parse => no changes made & return null
-        return expression.substring(originPos, pos);
+        return expression.slice(originPos, pos);
     };
     const parseSimpleSelector = () => {
         const originPos = pos;
@@ -251,7 +251,7 @@ export const parseSelectors = (expressions) => {
             pos = originPos;
             return null;
         } // syntax error: missing `)` => revert changes & return null
-        return expression.substring(originPos + 1, pos - 1);
+        return expression.slice(originPos + 1, pos - 1);
     };
     const parseSelectorParams = () => {
         const originPos = pos;
@@ -335,7 +335,7 @@ export const parseSelectors = (expressions) => {
             pos = originPos;
             return null;
         } // syntax error: missing closing_quoteChar => revert changes & return null
-        const value = expression.substring(originPos + 1, pos - 1); // excludes the opening_quoteChar & closing_quoteChar
+        const value = expression.slice(originPos + 1, pos - 1); // excludes the opening_quoteChar & closing_quoteChar
         if (quoteChar === "'") { // single quoteChar
             return value.replace(/(?<!\\)"/g, '\\"'); // escape the unescaped double quoteChar, so both single & double quoteChar are escaped
         }
